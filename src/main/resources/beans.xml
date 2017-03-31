@@ -37,10 +37,17 @@
     <bean id="uuidGenerator" class="org.activiti.engine.impl.persistence.StrongUuidGenerator" />
     
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <!--
         <property name="driverClassName" value="org.h2.Driver" />
         <property name="url" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000" />
         <property name="username" value="sa" />
         <property name="password" value="" />
+        <property name="defaultAutoCommit" value="false" />
+        -->
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/testsshdb?useUnicode=true&amp;characterEncoding=UTF-8" />
+        <property name="username" value="root" />
+        <property name="password" value="449449" />
         <property name="defaultAutoCommit" value="false" />
     </bean>
     
@@ -54,6 +61,13 @@
         <property name="databaseSchemaUpdate" value="true" />
         <property name="jobExecutorActivate" value="true" />
         <property name="enableDatabaseEventLogging" value="true" />
+        <property name="customSessionFactories">
+            <list>
+                <bean class="dtx.test.activiti.web.entity.impl.DTXUserEntityManagerFactory" />
+                <bean class="dtx.test.activiti.web.entity.impl.DTXGroupEntityManagerFactory" />
+                <bean class="dtx.test.activiti.web.entity.impl.DTXMembershipEntityManagerFactory" />
+            </list>
+        </property>
     </bean>
     
     <bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean" destroy-method="destroy">
@@ -71,4 +85,8 @@
     <bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
     <bean id="identityService" factory-bean="processEngine" factory-method="getIdentityService" />
 
+    
+    <bean id="userEntityManager" class="dtx.test.activiti.web.entity.impl.DTXUserEntityManager" />
+    <bean id="groupEntityManager" class="dtx.test.activiti.web.entity.impl.DTXGroupEntityManager" />
+    <bean id="membershipEntityManager" class="dtx.test.activiti.web.entity.impl.DTXMembershipEntityManager" />
 </beans>

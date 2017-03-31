@@ -49,6 +49,11 @@ activitiModeler
         });
 
         $translateProvider.preferredLanguage('en');
+//        if(navigator.language=="zh-CN"){
+//            $translateProvider.preferredLanguage('zh_cn');
+//        }else{
+//            $translateProvider.preferredLanguage('en');
+//        }
 
         // remember language
         $translateProvider.useCookieStorage();

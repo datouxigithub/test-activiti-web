@@ -32,7 +32,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * 流程模型控制器
  *
- * @author henryyan
  */
 @Controller
 @RequestMapping(value="/workflow")
