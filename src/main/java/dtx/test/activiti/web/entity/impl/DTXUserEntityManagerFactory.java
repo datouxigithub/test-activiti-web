@@ -8,7 +8,6 @@ package dtx.test.activiti.web.entity.impl;
 import org.activiti.engine.impl.interceptor.Session;
 import org.activiti.engine.impl.interceptor.SessionFactory;
 import org.activiti.engine.impl.persistence.entity.UserEntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -16,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DTXUserEntityManagerFactory implements SessionFactory{
 
-    @Autowired
     private DTXUserEntityManager userEntityManager;
     
     @Override

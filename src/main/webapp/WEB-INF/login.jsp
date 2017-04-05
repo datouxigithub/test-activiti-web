@@ -3,7 +3,7 @@
 
 <html lang="en">
 <head>
-	<%@ include file="/WEB-INF/common/global.jsp"%>
+	<%@ include file="/common/global.jsp"%>
 	<title>KAD登录页 - 咖啡兔(闫洪磊)</title>
 	<script>
 		var logon = ${not empty user};
@@ -11,9 +11,9 @@
 			location.href = '${ctx}/main/index';
 		}
 	</script>
-	<%@ include file="/WEB-INF/common/meta.jsp" %>
-	<%@ include file="//WEB-INF/common/include-jquery-ui-theme.jsp" %>
-    <%@ include file="/WEB-INF/common/include-base-styles.jsp" %>
+	<%@ include file="/common/meta.jsp" %>
+	<%@ include file="//common/include-jquery-ui-theme.jsp" %>
+    <%@ include file="/common/include-base-styles.jsp" %>
     <style type="text/css">
         .login-center {
             width: 600px;
