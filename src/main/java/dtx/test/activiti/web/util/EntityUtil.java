@@ -22,7 +22,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class EntityUtil {
     
-    private final static ApplicationContext context=new ClassPathXmlApplicationContext("beans.xml");
+    private final static ApplicationContext context=new ClassPathXmlApplicationContext("testbeans.xml");
     
     public static ApplicationContext getContext(){
         return context;

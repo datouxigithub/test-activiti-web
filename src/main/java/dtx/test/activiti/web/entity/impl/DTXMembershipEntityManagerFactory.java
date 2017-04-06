@@ -8,6 +8,7 @@ package dtx.test.activiti.web.entity.impl;
 import org.activiti.engine.impl.interceptor.Session;
 import org.activiti.engine.impl.interceptor.SessionFactory;
 import org.activiti.engine.impl.persistence.entity.MembershipEntityManager;
+import org.activiti.engine.impl.persistence.entity.MembershipIdentityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -16,17 +17,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DTXMembershipEntityManagerFactory implements SessionFactory{
 
-    @Autowired
     private DTXMembershipEntityManager membershipEntityManager;
     
     @Override
     public Class<?> getSessionType() {
-        return MembershipEntityManager.class;
+        return MembershipIdentityManager.class;
     }
 
     @Override
     public Session openSession() {
         return membershipEntityManager;
+    }
+
+    /**
+     * @param membershipEntityManager the membershipEntityManager to set
+     */
+    public void setMembershipEntityManager(DTXMembershipEntityManager membershipEntityManager) {
+        this.membershipEntityManager = membershipEntityManager;
     }
     
 }

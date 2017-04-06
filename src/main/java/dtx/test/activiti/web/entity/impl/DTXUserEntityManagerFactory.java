@@ -8,6 +8,8 @@ package dtx.test.activiti.web.entity.impl;
 import org.activiti.engine.impl.interceptor.Session;
 import org.activiti.engine.impl.interceptor.SessionFactory;
 import org.activiti.engine.impl.persistence.entity.UserEntityManager;
+import org.activiti.engine.impl.persistence.entity.UserIdentityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -19,12 +21,19 @@ public class DTXUserEntityManagerFactory implements SessionFactory{
     
     @Override
     public Class<?> getSessionType() {
-        return UserEntityManager.class;
+        return UserIdentityManager.class;
     }
 
     @Override
     public Session openSession() {
         return userEntityManager;
+    }
+
+    /**
+     * @param userEntityManager the userEntityManager to set
+     */
+    public void setUserEntityManager(DTXUserEntityManager userEntityManager) {
+        this.userEntityManager = userEntityManager;
     }
     
 }

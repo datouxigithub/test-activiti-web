@@ -63,9 +63,15 @@
         <property name="enableDatabaseEventLogging" value="true" />
         <property name="customSessionFactories">
             <list>
-                <bean class="dtx.test.activiti.web.entity.impl.DTXUserEntityManagerFactory" />
-                <bean class="dtx.test.activiti.web.entity.impl.DTXGroupEntityManagerFactory" />
-                <bean class="dtx.test.activiti.web.entity.impl.DTXMembershipEntityManagerFactory" />
+                <bean class="dtx.test.activiti.web.entity.impl.DTXUserEntityManagerFactory">
+                    <property name="userEntityManager" ref="userEntityManager" />
+                </bean>
+                <bean class="dtx.test.activiti.web.entity.impl.DTXGroupEntityManagerFactory">
+                    <property name="groupEntityManager" ref="groupEntityManager" />
+                </bean>
+                <bean class="dtx.test.activiti.web.entity.impl.DTXMembershipEntityManagerFactory">
+                    <property name="membershipEntityManager" ref="membershipEntityManager" />
+                </bean>
             </list>
         </property>
     </bean>

@@ -75,8 +75,7 @@ public class DTXUserEntityManager extends UserEntityManager{
 
     @Override
     public UserQuery createNewUserQuery() {
-        System.out.println("----------->>>");
-        throw new RuntimeException("not implement method.");
+        return new DtxUserQuery();
     }
 
     @Override

@@ -65,7 +65,7 @@ public class DTXGroupEntityManager extends GroupEntityManager{
 
     @Override
     public GroupQuery createNewGroupQuery() {
-        throw new RuntimeException("not implement method.");
+        return new DtxGroupQuery();
     }
 
     @Override
