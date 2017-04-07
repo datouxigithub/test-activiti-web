@@ -10,13 +10,16 @@ import java.util.ArrayList;
 import java.util.List;
 import org.activiti.engine.identity.User;
 import org.activiti.engine.identity.UserQuery;
+import org.activiti.engine.impl.AbstractQuery;
+import org.activiti.engine.impl.Page;
+import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.persistence.entity.UserEntity;
 
 /**
  *
  * @author gg
  */
-public class DtxUserQuery implements UserQuery{
+public class DtxUserQuery extends AbstractQuery<UserQuery, User> implements UserQuery{
     
     private String uuid,account;
 
@@ -54,52 +57,52 @@ public class DtxUserQuery implements UserQuery{
 
     @Override
     public UserQuery userEmail(String email) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("userEmail---------------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery userEmailLike(String emailLike) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
     public UserQuery memberOfGroup(String groupId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("memberOfGroup----------------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery potentialStarter(String procDefId) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("potentialStarter----------------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery orderByUserId() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("orderByUserId------------------>>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery orderByUserFirstName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("orderByUserFirstName------------------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery orderByUserLastName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("orderByUserLastName----------------------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery orderByUserEmail() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("orderByUserEmail---------------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery asc() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("asc------------------>>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public UserQuery desc() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("desc------------------>>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -139,6 +142,16 @@ public class DtxUserQuery implements UserQuery{
         for(int i=firstResult;i<maxResults;i++)
             result.add(covertUser(users.get(i)));
         return result;
+    }
+
+    @Override
+    public long executeCount(CommandContext commandContext) {
+        throw new UnsupportedOperationException("executeCount--------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<User> executeList(CommandContext commandContext, Page page) {
+        throw new UnsupportedOperationException("executeList------------>>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

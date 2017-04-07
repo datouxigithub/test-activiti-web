@@ -36,8 +36,8 @@ public class TestApp {
         IdentityServiceImpl identityService=(IdentityServiceImpl) EntityUtil.getIdentityService();
 //        for(User user:userQuery.list())
 //            System.out.println("--------------->>>"+user.getFirstName());
-        for(Group group:identityService.createGroupQuery().list())
-            System.out.println("--------------->>>"+group.getName());
+        for(User user:identityService.createUserQuery().list())
+            System.out.println("--------------->>>"+user.getFirstName());
 //        CommandExecutorImpl cei=(CommandExecutorImpl) identityService.getCommandExecutor();
 //        UserQuery userQuery=cei.execute(new CreateUserQueryCmd());
 //        identityService.createUserQuery();
