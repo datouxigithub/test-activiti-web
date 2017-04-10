@@ -106,7 +106,7 @@ public class ModelController {
         } catch (Exception e) {
             logger.error("根据模型部署流程失败：modelId={}", modelId, e);
         }
-        return "redirect:/service/list";
+        return "redirect:/workflow/list";
     }
 
     /**
@@ -166,7 +166,7 @@ public class ModelController {
     @RequestMapping(value = "delete/{modelId}")
     public String delete(@PathVariable("modelId") String modelId) {
         repositoryService.deleteModel(modelId);
-        return "redirect:/service/list";
+        return "redirect:/workflow/list";
     }
 
 }

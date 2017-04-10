@@ -6,5 +6,5 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%
-    request.getRequestDispatcher("rest/identity/users").forward(request, response);
+    request.getRequestDispatcher("rest/identity/users?memberOfGroup=ff808081598818400159881b48530009").forward(request, response);
 %>

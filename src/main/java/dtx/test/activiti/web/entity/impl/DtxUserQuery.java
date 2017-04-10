@@ -6,6 +6,7 @@
 package dtx.test.activiti.web.entity.impl;
 
 import dtx.oa.rbac.idao.factory.IDaoFactory;
+import dtx.oa.rbac.model.RoleUser;
 import java.util.ArrayList;
 import java.util.List;
 import org.activiti.engine.identity.User;
@@ -21,7 +22,7 @@ import org.activiti.engine.impl.persistence.entity.UserEntity;
  */
 public class DtxUserQuery extends AbstractQuery<UserQuery, User> implements UserQuery{
     
-    private String uuid,account;
+    private String uuid,account,roleId;
 
     @Override
     public UserQuery userId(String id) {
@@ -67,7 +68,8 @@ public class DtxUserQuery extends AbstractQuery<UserQuery, User> implements User
 
     @Override
     public UserQuery memberOfGroup(String groupId) {
-        throw new UnsupportedOperationException("memberOfGroup----------------->>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.roleId=groupId;
+        return this;
     }
 
     @Override
@@ -97,12 +99,12 @@ public class DtxUserQuery extends AbstractQuery<UserQuery, User> implements User
 
     @Override
     public UserQuery asc() {
-        throw new UnsupportedOperationException("asc------------------>>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
     public UserQuery desc() {
-        throw new UnsupportedOperationException("desc------------------>>>Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
@@ -125,22 +127,46 @@ public class DtxUserQuery extends AbstractQuery<UserQuery, User> implements User
     public User singleResult() {
         return covertUser((uuid!=null) ? IDaoFactory.iUserDao().getUserById(uuid):((account!=null) ? IDaoFactory.iUserDao().getUserByAccount(account):null));
     }
-
-    @Override
-    public List<User> list() {
-        List<dtx.oa.rbac.model.User> users=IDaoFactory.iUserDao().getUsersByStatus(true);
+    
+    private List<User> getUsers(){
+        List<dtx.oa.rbac.model.User> users=null;
+        if(roleId!=null&&!"".equals(roleId)){
+           List<RoleUser> rus=IDaoFactory.iRoleUserDao().queryByRoleId(roleId);
+           users=new ArrayList<>();
+           for(RoleUser ru:rus)
+               users.add(IDaoFactory.iUserDao().getUserById(ru.getUserId()));
+           rus=null;
+        }else
+            users=IDaoFactory.iUserDao().getUsersByStatus(true);
         List<User> result=new ArrayList<>();
         for(dtx.oa.rbac.model.User u:users)
             result.add(covertUser(u));
+        users=null;
         return result;
     }
 
     @Override
+    public List<User> list() {
+//        List<dtx.oa.rbac.model.User> users=IDaoFactory.iUserDao().getUsersByStatus(true);
+//        List<User> result=new ArrayList<>();
+//        for(dtx.oa.rbac.model.User u:users)
+//            result.add(covertUser(u));
+//        return result;
+        return getUsers();
+    }
+
+    @Override
     public List<User> listPage(int firstResult, int maxResults) {
-        List<dtx.oa.rbac.model.User> users=IDaoFactory.iUserDao().getUsersByStatus(true);
+//        List<dtx.oa.rbac.model.User> users=IDaoFactory.iUserDao().getUsersByStatus(true);
+//        List<User> result=new ArrayList<>();
+//        for(int i=firstResult,len=(maxResults>users.size()) ? users.size():maxResults;i<len;i++){
+//            result.add(covertUser(users.get(i)));
+//        }
+//        return result;
+        List<User> users=getUsers();
         List<User> result=new ArrayList<>();
-        for(int i=firstResult;i<maxResults;i++)
-            result.add(covertUser(users.get(i)));
+        for(int i=0,len=(maxResults>users.size()) ? users.size():maxResults;i<len;i++)
+            result.add(users.get(i));
         return result;
     }
 

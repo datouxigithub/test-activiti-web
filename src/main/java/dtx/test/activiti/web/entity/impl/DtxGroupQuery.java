@@ -12,13 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 import org.activiti.engine.identity.Group;
 import org.activiti.engine.identity.GroupQuery;
+import org.activiti.engine.impl.AbstractQuery;
+import org.activiti.engine.impl.Page;
+import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.persistence.entity.GroupEntity;
 
 /**
  *
  * @author gg
  */
-public class DtxGroupQuery implements GroupQuery{
+public class DtxGroupQuery extends AbstractQuery<GroupQuery, Group> implements GroupQuery{
     
     private String uuid,roleName;
 
@@ -70,12 +73,12 @@ public class DtxGroupQuery implements GroupQuery{
 
     @Override
     public GroupQuery asc() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
     public GroupQuery desc() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return this;
     }
 
     @Override
@@ -109,9 +112,19 @@ public class DtxGroupQuery implements GroupQuery{
     public List<Group> listPage(int firstResult, int maxResults) {
         List<RoleTreeLeaf> roles=IDaoFactory.iRoleDao().getAllRoles().toList();
         List<Group> result=new ArrayList<>();
-        for(int i=firstResult;i<maxResults;i++)
+        for(int i=firstResult,len=(maxResults>roles.size()) ? roles.size():maxResults;i<len;i++)
             result.add(covertGroup(roles.get(i).getEntity()));
         return result;
+    }
+
+    @Override
+    public long executeCount(CommandContext commandContext) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Group> executeList(CommandContext commandContext, Page page) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }
