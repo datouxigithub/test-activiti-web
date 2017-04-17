@@ -16,6 +16,7 @@ import org.junit.Test;
  *
  * @author datouxi
  */
+@Ignore
 public class HelloWorldJUnitTest {
     
     @Test
