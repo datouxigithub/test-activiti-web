@@ -34,25 +34,19 @@ public class FormDesign {
         Pattern pregGroup=Pattern.compile("<input.*?\\/>", Pattern.CASE_INSENSITIVE);
         Pattern pregVal=Pattern.compile("(?<=\").*(?=\")");
         
-        List<List<String>> templateArr=new ArrayList<>();
-        
         boolean isNew=false;
         String name="",leipiplugins="",selectDot="";
         int checkboxs=0;
         
-        Matcher pregMatcher=preg.matcher(template);
-        while (pregMatcher.find()) {
-            List<String> groups=new ArrayList<>();
-            for(int i=0,len=pregMatcher.groupCount();i<len;i++){
-                groups.add(pregMatcher.group(i));
-            }
-            templateArr.add(groups);
-        }
+        Map addFields=new HashMap();
+        
+        List<List<String>> templateArr=matchAll(preg, template);
+
         for(List<String> contentElement:templateArr){
             String tag=contentElement.get(5)!=null ? contentElement.get(5):contentElement.get(3);
             String plugin=contentElement.get(0);
             
-            Map<String,String> attrAll=new HashMap<>();
+            Map<String,Object> attrAll=new HashMap<>();
             
             if(tag.equals("radios")||tag.equals("checkboxs")){
                 plugin=contentElement.get(1);
@@ -61,21 +55,13 @@ public class FormDesign {
                 plugin=plugin.replace("|-", "").replace("-|", "");
             }
             
-            Matcher matcher=pregAttr.matcher(plugin);
-            List<List<String>> parseAttr=new ArrayList<>();
-            while(matcher.find()){
-                List<String> groups=new ArrayList<>();
-                for(int i=0,len=matcher.groupCount();i<len;i++)
-                    groups.add(matcher.group(i));
-                parseAttr.add(groups);
-            }
+            List<List<String>> parseAttr=matchAll(pregAttr, plugin);
             for(List<String> attrElement:parseAttr){
                 String attr=attrElement.get(0).trim();
                 if(StringUtils.isEmpty(attr))continue;
-                Matcher matchVal=pregVal.matcher(attr);
-                String val="";
-                if(matchVal.find())
-                    val=matchVal.group();
+
+                String val=matchOne(pregVal, attr);
+
                 if(attr.equals("name")){
                     if(val.equals("leipiNewField")){
                         isNew=true;
@@ -103,20 +89,112 @@ public class FormDesign {
                 attrAll.put("content", "<span leipiplugins=\"checkboxs\" title=\""+attrAll.get("title")+"\">");
                 Matcher pregGroupMatcher=pregGroup.matcher(options);
                 while(pregGroupMatcher.find()){
-                    while(matcher.find()){
-                        List<String> groups=new ArrayList<>();
-                        for(int i=0,len=matcher.groupCount();i<len;i++)
-                            groups.add(matcher.group(i));
-                        parseAttr.add(groups);
+                    parseAttr=matchAll(pregAttr, pregGroupMatcher.group());
+                    isNew=false;
+                    Map optionsMap=new HashMap();
+                    for(List<String> attrElement:parseAttr){
+                        String val=matchOne(pregVal, attrElement.get(0));
+                        if("name".equals(attrElement.get(1))){
+                            if("leipiNewField".equals(val)){
+                                isNew=true;
+                                val="data_"+(++fields);
+                            }
+                            attrAll.put("name", (attrAll.get("name")!=null ? attrAll.get("name"):"")+dotName+val);
+                            dotName=",";
+                        }else if("value".equals(attrElement.get(1))){
+                            attrAll.put("value", (attrAll.get("value")!=null ? attrAll.get("value"):"")+dotValue+val);
+                            dotValue=",";
+                        }
+                        optionsMap.put(attrElement.get(1), val);
                     }
+                    attrAll.put("options", optionsMap);
+                    if(isNew){
+                        Map tmpMap=new HashMap();
+                        tmpMap.put("name", optionsMap.get("name"));
+                        tmpMap.put("leipiplugins", attrAll.get("leipiplugins"));
+                        addFields.put(optionsMap.get("name"), tmpMap);
+                    }
+                    attrAll.put("content", (attrAll.get("content")!=null : (String)attrAll.get("content"):"")+"<input type=\"checkbox\" name=\""+(String)optionsMap.get("name")+" value=\""+(String)optionsMap.get("value")+"\" "+(optionsMap.get("checked")!=null ? "checked=\"checked\"":"")+"/>"+(String)optionsMap.get("value")+"&nbsp;");
                 }
-            }else if(!StringUtils.isEmpty(name)){
+                attrAll.put("content", (String)attrAll.get("content")+"</span>");
                 
+                //未处理
+                
+            }else if(!StringUtils.isEmpty(name)){
+                if("radios".equals(tag)){
+                    plugin=contentElement.get(0).replace("|-", "").replace("-|", "");//?
+                    attrAll.put("value", "");
+                    String options=contentElement.get(4);
+                    String dot="";
+                    attrAll.put("content", "<span leipiplugins=\"radios\" name=\""+(attrAll.get("name")!=null ? (String)attrAll.get("name"):"")+"\" title=\""+(attrAll.get("title")!=null ? (String)attrAll.get("title"):"")+"\">");
+                    Matcher pregGroupMatcher=pregGroup.matcher(options);
+                    while(pregGroupMatcher.find()){
+                        parseAttr=matchAll(pregAttr, pregGroupMatcher.group());
+                        Map optionsMap=new HashMap();
+                        for(List<String> attrElement:parseAttr){
+                            if("value".equals(attrElement.get(1))){
+                                attrAll.put("value", (attrAll.get("value")!=null ? (String)attrAll.get("value"):"")+dot+matchOne(pregVal, attrElement.get(0)));
+                                dot=",";
+                            }
+                            optionsMap.put(attrElement.get(1), matchOne(pregVal, attrElement.get(0)));
+                        }
+                        optionsMap.put("name", attrAll.get("name"));
+                        attrAll.put("options", optionsMap);
+                        attrAll.put("content", (attrAll.get("content")!=null ? (String)attrAll.get("content"):"")
+                                                +"<input type=\"radio\" name=\""
+                                                +(attrAll.get("name")!=null ? (String)attrAll.get("name"):"")
+                                                +"\" value=\""+optionsMap.get("value")
+                                                +(optionsMap.get("checked")!=null ? "checked=\"checked\"":"")+"/>"
+                                                +optionsMap.get("value")+"&nbsp;");
+                    }
+                    attrAll.put("content", (String)attrAll.get("content")+"</span>");
+                }else{
+                    attrAll.put("content", isNew ? plugin.replace(name, "str_replace"):plugin);
+                }
+                
+                if(isNew){
+                    Map tmpMap=new HashMap();
+                    tmpMap.put("name", name);
+                    tmpMap.put("leipiplugins", attrAll.get("leipiplugins"));
+                    addFields.put(name, tmpMap);
+                }
+                
+                //未处理
             }
 //            break;
         }
         
         return null;
+    }
+    
+    private String matchOne(Pattern pat,String attr){
+        Matcher matcher=pat.matcher(attr);
+        String val="";
+        if(matcher.find())val=matcher.group();
+        return val;
+    }
+    
+    private List<List<String>> matchAll(Pattern pat,String content){
+        
+        Matcher matcher=pat.matcher(content);
+        List<List<String>> result=new ArrayList<>();
+        while(matcher.find()){
+            List<String> groups=new ArrayList<>();
+            for(int i=0,len=matcher.groupCount();i<len;i++)
+                groups.add(matcher.group(i));
+            result.add(groups);
+        }
+        
+        return result;
+    }
+    
+    private void print(List<List<String>> list){
+        for(List<String> strList:list){
+            System.out.println("------------------------------------------------------------------");
+            for(String str:strList)
+                System.out.println(str);
+        }
+        System.out.println("----------------------"+list.toString()+"------------------------------");
     }
     
     public static void main(String[] args) {
