@@ -6,7 +6,9 @@
         <title>ueditor demo</title>
     </head>
     <body>
-        <script id="myFormDesign" type="text/plain" style="width: 100%"></script>
+        <form id="saveform" name="saveform" action="" method="post">
+            <script id="myFormDesign" type="text/plain" style="width: 100%"></script>
+        </form>
         
         <script type="text/javascript" src="js/ueditor/ueditor.config.js"></script>
         <script type="text/javascript" src="js/ueditor/ueditor.all.js"></script>
@@ -239,15 +241,16 @@
             formeditor=leipiEditor.getContent();
             //解析表单设计器控件
             var parse_form = this.parse_form(formeditor,fields);
-            //alert(parse_form);
+//            alert(parse_form);
             
             
             $("#leipi_type").val(type_value);
             $("#leipi_parse_form").val(parse_form);
-            
+
             $("#saveform").attr("target","_blank");
-            $("#saveform").attr("action","/index/parse.html");
+            $("#saveform").attr("action","<%=request.getContextPath()%>/tfd");
             $("#saveform").submit();
+            
 
              /*//异步提交数据
              $.ajax({
@@ -293,7 +296,7 @@
             document.saveform.target="mywin";
             window.open('','mywin',"menubar=0,toolbar=0,status=0,resizable=1,left=0,top=0,scrollbars=1,width=" +(screen.availWidth-10) + ",height=" + (screen.availHeight-50) + "\"");
 
-            document.saveform.action="/index/preview.html";
+            document.saveform.action="<%=request.getContextPath()%>/tfd";
             document.saveform.submit(); //提交表单
         } else {
             alert('表单内容不能为空！');
