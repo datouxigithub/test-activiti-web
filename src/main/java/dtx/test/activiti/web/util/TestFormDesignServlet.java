@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.JSONObject;
 
 /**
  *
@@ -26,8 +27,10 @@ public class TestFormDesignServlet extends HttpServlet {
         request.setCharacterEncoding("utf-8");
         Map<String,Object> result=new FormDesign().parseForm(request.getParameter("design_content"));
 //        response.getWriter().write(result.toString());
-        response.getWriter().write(result.get("template").toString());
+//        response.getWriter().write(result.get("template").toString());
 //        response.getWriter().write(request.getParameter("design_content"));
+        request.setAttribute("parseForm", new JSONObject(result).toString());
+        request.getRequestDispatcher("show.jsp").forward(request, response);
     }
 
     @Override
