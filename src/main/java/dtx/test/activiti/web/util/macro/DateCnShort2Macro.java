@@ -25,7 +25,7 @@ public class DateCnShort2Macro implements IMacro{
 
     @Override
     public List<MacroEntry> macroValues(Object... args) {
-        SimpleDateFormat sdf=new SimpleDateFormat("m月d日");
+        SimpleDateFormat sdf=new SimpleDateFormat("MM月dd日");
         String dateStr=sdf.format(new Date());
         List<MacroEntry> result=new ArrayList<>();
         result.add(new MacroEntry(dateStr));

@@ -25,7 +25,7 @@ public class TimeMacro implements IMacro{
 
     @Override
     public List<MacroEntry> macroValues(Object... args) {
-        SimpleDateFormat sdf=new SimpleDateFormat("H:i:s");
+        SimpleDateFormat sdf=new SimpleDateFormat("HH:mm:ss");
         String dateStr=sdf.format(new Date());
         List<MacroEntry> result=new ArrayList<>();
         result.add(new MacroEntry(dateStr));

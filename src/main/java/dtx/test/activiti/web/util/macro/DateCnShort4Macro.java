@@ -20,12 +20,12 @@ public class DateCnShort4Macro implements IMacro{
     
     @Override
     public String macroType() {
-        return "sys_date_cn_short";
+        return "sys_date_cn_short4";
     }
 
     @Override
     public List<MacroEntry> macroValues(Object... args) {
-        SimpleDateFormat sdf=new SimpleDateFormat("Y");
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy");
         String dateStr=sdf.format(new Date());
         List<MacroEntry> result=new ArrayList<>();
         result.add(new MacroEntry(dateStr));

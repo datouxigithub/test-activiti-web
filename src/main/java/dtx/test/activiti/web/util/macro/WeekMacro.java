@@ -14,24 +14,24 @@ import java.util.List;
 
 /**
  *
- * @author datouxi
+ * @author gg
  */
-public class DateCnShort1Macro implements IMacro{
-    
+public class WeekMacro implements IMacro{
+
     @Override
     public String macroType() {
-        return "sys_date_cn_short1";
+        return "sys_week";
     }
 
     @Override
     public List<MacroEntry> macroValues(Object... args) {
-        SimpleDateFormat sdf=new SimpleDateFormat("Y年M月");
+        SimpleDateFormat sdf=new SimpleDateFormat("E");
         String dateStr=sdf.format(new Date());
         List<MacroEntry> result=new ArrayList<>();
         result.add(new MacroEntry(dateStr));
         return result;
     }
-    
+
     @Override
     public boolean isMulti() {
         return false;

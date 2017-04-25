@@ -8,6 +8,7 @@ package dtx.test.activiti.web.util;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Map;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -30,7 +31,8 @@ public class TestFormDesignServlet extends HttpServlet {
 //        response.getWriter().write(result.get("template").toString());
 //        response.getWriter().write(request.getParameter("design_content"));
         request.setAttribute("parseForm", new JSONObject(result).toString());
-        request.getRequestDispatcher("show.jsp").forward(request, response);
+        RequestDispatcher dispatcher=request.getRequestDispatcher("show.jsp");
+        dispatcher.forward(request, response);
     }
 
     @Override

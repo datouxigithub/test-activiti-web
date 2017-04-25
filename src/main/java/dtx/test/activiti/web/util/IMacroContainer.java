@@ -12,6 +12,7 @@ import dtx.test.activiti.web.util.macro.DateCnShort3Macro;
 import dtx.test.activiti.web.util.macro.DateCnShort4Macro;
 import dtx.test.activiti.web.util.macro.DateTimeMacro;
 import dtx.test.activiti.web.util.macro.TimeMacro;
+import dtx.test.activiti.web.util.macro.WeekMacro;
 import java.util.Stack;
 
 /**
@@ -29,6 +30,7 @@ public class IMacroContainer {
         macroStack.push(new DateCnShort4Macro());
         macroStack.push(new DateTimeMacro());
         macroStack.push(new TimeMacro());
+        macroStack.push(new WeekMacro());
     }
     
     public static IMacro chooseMacro(String type){

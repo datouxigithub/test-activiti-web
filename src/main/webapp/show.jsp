@@ -1,3 +1,4 @@
+<%@page import="java.util.Iterator"%>
 <%@page import="dtx.test.activiti.web.util.*"%>
 <%@page import="org.json.JSONArray"%>
 <%@page import="org.json.JSONObject"%>
@@ -13,8 +14,6 @@
             <%
                 String json=request.getAttribute("parseForm").toString();
                 JSONObject result=new JSONObject(json);
-//                out.println(json);
-                //out.println(result.getString("parse"));
                 StringBuilder sb=new StringBuilder();
                 boolean isVal=false;
                 String val="";
@@ -27,10 +26,25 @@
                         if(isVal){
                             for(int j=0;j<result.getJSONArray("data").length();j++){
                                 JSONObject obj=result.getJSONArray("data").getJSONObject(j);
-                                if(val.equals(obj.getString("name"))&&"macros".equals(obj.getString("leipiplugins"))){
-//                                    out.println(obj.getString("content"));
-                                    IMacro im=IMacroContainer.chooseMacro(obj.getString("orgtype"));
-                                    out.println(im.macroValues().get(0).getValue());
+                                if(val.equals(obj.getString("name"))){
+                                    if("macros".equals(obj.getString("leipiplugins"))){
+                                        IMacro im=IMacroContainer.chooseMacro(obj.getString("orgtype"));
+                                        String element="";
+                                        String attrs="";
+                                        Iterator<String> iter=obj.keys();
+                                        while(iter.hasNext()){
+                                            String key=iter.next();
+                                            if("value".equals(key)||"content".equals(key))continue;
+                                            attrs+=" "+key+"=\""+obj.getString(key)+"\"";
+                                        }
+                                        if(im.isMulti())
+                                            element+="<select"+attrs+"</select>";
+                                        else
+                                            element+="<input"+attrs+" value=\""+im.macroValues(request,response).get(0).getValue()+"\" disabled />";
+                                        sb.append(element);
+                                    }else{
+                                        sb.append(obj.getString("content"));
+                                    }
                                     break;
                                 }
                             }
@@ -44,7 +58,7 @@
                             sb.append(s);
                     }
                 }
-//                out.println(sb.toString());
+                out.println(sb.toString());
             %>     
         </form>
     </body>

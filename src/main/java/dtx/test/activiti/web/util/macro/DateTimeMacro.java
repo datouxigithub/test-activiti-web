@@ -25,7 +25,7 @@ public class DateTimeMacro implements IMacro{
 
     @Override
     public List<MacroEntry> macroValues(Object... args) {
-        SimpleDateFormat sdf=new SimpleDateFormat("Y-m-d H:i:s");
+        SimpleDateFormat sdf=new SimpleDateFormat("Y-MM-dd HH:mm:ss");
         String dateStr=sdf.format(new Date());
         List<MacroEntry> result=new ArrayList<>();
         result.add(new MacroEntry(dateStr));
