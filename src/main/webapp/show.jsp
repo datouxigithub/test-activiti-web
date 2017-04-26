@@ -1,3 +1,6 @@
+<%@page import="java.util.List"%>
+<%@page import="org.json.JSONException"%>
+<%@page import="java.util.Arrays"%>
 <%@page import="java.util.Iterator"%>
 <%@page import="dtx.test.activiti.web.util.*"%>
 <%@page import="org.json.JSONArray"%>
@@ -26,7 +29,13 @@
                         if(isVal){
                             for(int j=0;j<result.getJSONArray("data").length();j++){
                                 JSONObject obj=result.getJSONArray("data").getJSONObject(j);
-                                if(val.equals(obj.getString("name"))){
+                                String targetName="";
+                                try{
+                                    targetName=obj.getString("parse_name");
+                                }catch(JSONException e){
+                                    targetName=obj.getString("name");
+                                }
+                                if(val.equals(targetName)){
                                     if("macros".equals(obj.getString("leipiplugins"))){
                                         IMacro im=IMacroContainer.chooseMacro(obj.getString("orgtype"));
                                         String element="";
@@ -37,11 +46,40 @@
                                             if("value".equals(key)||"content".equals(key))continue;
                                             attrs+=" "+key+"=\""+obj.getString(key)+"\"";
                                         }
-                                        if(im.isMulti())
-                                            element+="<select"+attrs+"</select>";
+                                        if(im.isMulti()){
+                                            element+="<select"+attrs+">";
+                                            List<MacroEntry> entrys=im.macroValues(request,response);
+                                            for(MacroEntry entry:entrys){
+                                                element+="<option value=\""+entry.getValue()+"\">"+entry.getKey()+"</option>";
+                                            }
+                                            element+="</select>";
+                                        }
                                         else
                                             element+="<input"+attrs+" value=\""+im.macroValues(request,response).get(0).getValue()+"\" disabled />";
                                         sb.append(element);
+                                    }else if("listctrl".equals(obj.getString("leipiplugins"))){
+                                        String[] orgTitle=obj.getString("orgtitle").trim().substring(0, obj.getString("orgtitle").length()-1).split("`");//标题
+                                        String[] orgColType=obj.getString("orgcoltype").trim().substring(0, obj.getString("orgcoltype").length()-1).split("`");//类型
+                                        String[] orgSum=obj.getString("orgsum").trim().substring(0, obj.getString("orgsum").length()-1).split("`");//合计
+                                        String[] orgUnit=obj.getString("orgunit").trim().substring(0, obj.getString("orgunit").length()-1).split("`");//单位
+                                        String[] orgColValue=obj.getString("orgcolvalue").trim().substring(0, obj.getString("orgcolvalue").length()-1).split("`");//默认值
+                                        
+                                        String ths="";
+                                        int tdSum=0;
+                                        for(int x=0;x<orgTitle.length;x++){
+                                            String title=orgTitle[x];
+                                            tdSum++;
+                                            String unit="";
+                                            try{
+                                                unit=(orgUnit[x]!=null&&!"".equals(orgUnit[x])) ? "("+orgUnit[x]+")":"";
+                                            }catch(Exception ex){}
+                                            ths+="<th>"+title+unit+"</th>";
+                                        }
+                                        
+                                        String listTable="<table id=\""+obj.getString("name")+"_table\" cellspacing=\"0\" class=\"table table-bordered table-condensed\" style=\""+obj.getString("style")+"\" border=\"1\">"
+                                                            +"<thead><tr><th colspan=\""+tdSum+"\">"+obj.getString("title")+"</th></tr><tr>"+ths+"</tr></thead>";
+                                        listTable+="</table>";
+                                        sb.append(listTable);
                                     }else{
                                         sb.append(obj.getString("content"));
                                     }

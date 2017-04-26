@@ -151,7 +151,7 @@ public class FormDesign {
                         attrAll.put("content", (attrAll.get("content")!=null ? (String)attrAll.get("content"):"")
                                                 +"<input type=\"radio\" name=\""
                                                 +(attrAll.get("name")!=null ? (String)attrAll.get("name"):"")
-                                                +"\" value=\""+optionsMap.get("value")
+                                                +"\" value=\""+optionsMap.get("value")+"\" "
                                                 +(optionsMap.get("checked")!=null ? "checked=\"checked\"":"")+"/>"
                                                 +optionsMap.get("value")+"&nbsp;");
                     }
