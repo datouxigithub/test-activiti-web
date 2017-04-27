@@ -65,6 +65,7 @@
                                         String[] orgColValue=obj.getString("orgcolvalue").trim().substring(0, obj.getString("orgcolvalue").length()-1).split("`");//默认值
                                         
                                         String ths="";
+                                        String tbTds="";
                                         int tdSum=0;
                                         for(int x=0;x<orgTitle.length;x++){
                                             String title=orgTitle[x];
@@ -74,6 +75,21 @@
                                                 unit=(orgUnit[x]!=null&&!"".equals(orgUnit[x])) ? "("+orgUnit[x]+")":"";
                                             }catch(Exception ex){}
                                             ths+="<th>"+title+unit+"</th>";
+                                            switch(orgColType[x]){
+                                                case "text":
+                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"\">"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    break;
+                                                case "textarea":
+                                                    tbTds+="<td><textarea class=\"input-medium\" name=\""+obj.getString("name")+"\"["+x+"][]\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"</textarea>"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    break;
+                                                case "int":
+                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"\">"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    break;
+                                                case "calc":
+                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"\">"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    break;
+                                                default:break;
+                                            }
                                         }
                                         
                                         String listTable="<table id=\""+obj.getString("name")+"_table\" cellspacing=\"0\" class=\"table table-bordered table-condensed\" style=\""+obj.getString("style")+"\" border=\"1\">"
