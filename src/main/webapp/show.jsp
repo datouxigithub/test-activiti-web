@@ -66,6 +66,7 @@
                                         
                                         String ths="";
                                         String tbTds="";
+                                        String footer="";
                                         int tdSum=0;
                                         for(int x=0;x<orgTitle.length;x++){
                                             String title=orgTitle[x];
@@ -75,25 +76,44 @@
                                                 unit=(orgUnit[x]!=null&&!"".equals(orgUnit[x])) ? "("+orgUnit[x]+")":"";
                                             }catch(Exception ex){}
                                             ths+="<th>"+title+unit+"</th>";
+                                            String colValue="",colUnit="";
+                                            try{
+                                                colValue=orgColValue[x]!=null ? orgColValue[x]:"";
+                                            }catch(Exception e1){}
+                                            try{
+                                                colUnit=orgUnit[x]!=null ? orgUnit[x]:"";
+                                            }catch(Exception e1){}
                                             switch(orgColType[x]){
                                                 case "text":
-                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"\">"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+colValue+"\">"+colUnit+"</td>";
                                                     break;
                                                 case "textarea":
-                                                    tbTds+="<td><textarea class=\"input-medium\" name=\""+obj.getString("name")+"\"["+x+"][]\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"</textarea>"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    tbTds+="<td><textarea class=\"input-medium\" name=\""+obj.getString("name")+"\"["+x+"][]\""+colValue+"</textarea>"+colUnit+"</td>";
                                                     break;
                                                 case "int":
-                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"\">"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+colValue+"\">"+colUnit+"</td>";
                                                     break;
                                                 case "calc":
-                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+(orgColValue[x]!=null ? orgColValue[x]:"")+"\">"+(orgUnit[x]!=null ? orgUnit[x]:"")+"</td>";
+                                                    tbTds+="<td><input class=\"input-medium\" type=\"text\" name=\""+obj.getString("name")+"\"["+x+"][]\" value=\""+colValue+"\">"+colUnit+"</td>";
                                                     break;
                                                 default:break;
+                                            }
+                                            int sum=0;
+                                            try{
+                                                sum=Integer.valueOf(orgSum[x]);
+                                            }catch(Exception e1){}
+                                            if(sum>0){
+                                                footer+="<td>合计：<input type=\"text\" class=\"input-small\" name=\""+obj.getString("name")+"["+x+"][total]\""+"onblur=\"sum_total('"+obj.getString("name")+"["+x+"][]')\" value=\""
+                                                        +colValue+"\"> "+colUnit+"</td>";
+                                            }else{
+                                                footer+="<td></td>";
                                             }
                                         }
                                         
                                         String listTable="<table id=\""+obj.getString("name")+"_table\" cellspacing=\"0\" class=\"table table-bordered table-condensed\" style=\""+obj.getString("style")+"\" border=\"1\">"
-                                                            +"<thead><tr><th colspan=\""+tdSum+"\">"+obj.getString("title")+"</th></tr><tr>"+ths+"</tr></thead>";
+                                                            +"<thead><tr><th colspan=\""+tdSum+"\">"+obj.getString("title")+"</th></tr><tr>"+ths+"</tr></thead>"
+                                                            +"<tbody><tr></tr>"+tbTds+"</tbody>"
+                                                            +"<tfooter><tr>"+footer+"<td></td></tr></tfooter>";
                                         listTable+="</table>";
                                         sb.append(listTable);
                                     }else{
