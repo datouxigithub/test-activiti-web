@@ -5,11 +5,14 @@
  */
 package dtx.test.activiti.web.app;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
 import javassist.NotFoundException;
 
 /**
@@ -18,20 +21,47 @@ import javassist.NotFoundException;
  */
 public class TestJavassist {
     
-    private static Map<String,String> customFields;
+    private static final Map<String,CtClass> customFields;
     
     static {
         customFields=new LinkedHashMap<>();
-        for(int i=1;i<=10;i++){
-            customFields.put("data_"+i, "Data"+i);
-        }
+        customFields.put("data_1", CtClass.intType);
+        customFields.put("data_2", CtClass.longType);
+        customFields.put("data_3", CtClass.booleanType);
+        customFields.put("data_4", CtClass.byteType);
+        customFields.put("data_5", CtClass.shortType);
+        customFields.put("data_6", CtClass.floatType);
+//        customFields.put("data_7", CtClass.voidType);
+        customFields.put("data_8", CtClass.charType);
+        customFields.put("data_9", CtClass.doubleType);
     }
     
-    public static void main(String[] args) throws CannotCompileException, NotFoundException {
+    public static void main(String[] args) throws CannotCompileException, NotFoundException, ReflectiveOperationException {
         ClassPool pool=ClassPool.getDefault();
         CtClass newClass=pool.makeClass("dtx.test.activiti.web.app.userform.MyForm");
         newClass.setSuperclass(pool.get("dtx.test.activiti.web.app.DefaultUserForm"));
-        System.out.println(newClass.toString());
+        Iterator<String> iter=customFields.keySet().iterator();
+        while(iter.hasNext()){
+            String field=iter.next();
+            CtField ctf=new CtField(customFields.get(field), field, newClass);
+            newClass.addField(ctf);
+            newClass.addMethod(CtMethod.make(getter(field), newClass));
+            newClass.addMethod(CtMethod.make(setter(field), newClass));
+        }
+        Object obj=newClass.toClass().newInstance();
+        System.out.println(obj.toString());
+    }
+    
+    private static String getter(String field){
+        return String.format("public %s get%s(){return this.%s;}",customFields.get(field).getName(),methodName(field),field);
+    }
+    
+    private static String setter(String field){
+        return String.format("public void set%s(%s value){this.%s=value;}", methodName(field),customFields.get(field).getName(),field);
+    }
+    
+    private static String methodName(String field){
+        return (field.substring(0, 1).toUpperCase()+field.substring(1)).replace("_", "");
     }
     
 }

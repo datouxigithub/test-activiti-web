@@ -5,14 +5,24 @@
  */
 package dtx.test.activiti.web.app;
 
+import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+
 /**
  *
  * @author gg
  */
-public class DefaultUserForm {
+@Entity
+public class DefaultUserForm implements Serializable {
     private int id,uid,foreignId,updateTime,dateLine;
     private boolean isDel;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     public int getId() {
         return id;
     }
