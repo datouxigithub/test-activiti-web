@@ -17,7 +17,7 @@ import javassist.CtMethod;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.annotation.Annotation;
-import org.activiti.engine.impl.interceptor.SessionFactory;
+import org.hibernate.SessionFactory;
 
 /**
  *
@@ -58,6 +58,7 @@ public class TestJavassist {
         newClass.getClassFile().addAttribute(classAttr);
         
         SessionFactory sessionFactory=(SessionFactory) EntityUtil.obtanSessionFactory(newClass.toClass());
+        sessionFactory.close();
     }
     
     private static String getter(String field){

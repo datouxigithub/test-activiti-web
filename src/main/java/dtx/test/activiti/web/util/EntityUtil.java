@@ -18,11 +18,13 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.metadata.ClassMetadata;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean;
 
 /**
@@ -71,7 +73,7 @@ public class EntityUtil {
         return (IdentityService) context.getBean("identityService");
     }
     
-    public synchronized static SessionFactory obtanSessionFactory(Class<?> entityClass){
+    public synchronized static SessionFactory obtanSessionFactory(Class<?> entityClass) throws HibernateException{
         SessionFactory sessionFactory=(SessionFactory) getContext().getBean("sessionFactory");
         
         Map<String,ClassMetadata> classMetaDataMap=sessionFactory.getAllClassMetadata();
