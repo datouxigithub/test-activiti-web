@@ -5,6 +5,7 @@
  */
 package dtx.test.activiti.web.app;
 
+import dtx.test.activiti.web.util.EntityUtil;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,6 +15,9 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.annotation.Annotation;
+import org.activiti.engine.impl.interceptor.SessionFactory;
 
 /**
  *
@@ -48,8 +52,12 @@ public class TestJavassist {
             newClass.addMethod(CtMethod.make(getter(field), newClass));
             newClass.addMethod(CtMethod.make(setter(field), newClass));
         }
-        Object obj=newClass.toClass().newInstance();
-        System.out.println(obj.toString());
+        AnnotationsAttribute classAttr=new AnnotationsAttribute(newClass.getClassFile().getConstPool(), AnnotationsAttribute.visibleTag);
+        Annotation classAnnot=new Annotation("javax.persistence.Entity", newClass.getClassFile().getConstPool());
+        classAttr.addAnnotation(classAnnot);
+        newClass.getClassFile().addAttribute(classAttr);
+        
+        SessionFactory sessionFactory=(SessionFactory) EntityUtil.obtanSessionFactory(newClass.toClass());
     }
     
     private static String getter(String field){

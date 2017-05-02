@@ -53,7 +53,7 @@
     
     <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean" lazy-init="false">
         <property name="dataSource" ref="dataSource" />
-        <property name="packagesToScan" value="dtx.text.activiti.web.app" />
+        <property name="packagesToScan" value="dtx.test.activiti.web.app" />
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>

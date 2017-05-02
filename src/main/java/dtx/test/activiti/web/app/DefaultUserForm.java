@@ -16,7 +16,7 @@ import javax.persistence.MappedSuperclass;
  *
  * @author gg
  */
-@Entity
+@MappedSuperclass
 public class DefaultUserForm implements Serializable {
     private int id,uid,foreignId,updateTime,dateLine;
     private boolean isDel;
