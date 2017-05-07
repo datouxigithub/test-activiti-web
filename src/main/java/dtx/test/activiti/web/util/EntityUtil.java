@@ -5,6 +5,7 @@
  */
 package dtx.test.activiti.web.util;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class EntityUtil {
         return (IdentityService) context.getBean("identityService");
     }
     
-    public synchronized static SessionFactory obtanSessionFactory(Class<?> entityClass) throws HibernateException{
+    public synchronized static SessionFactory obtanSessionFactory(Class<?> entityClass) throws HibernateException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
         SessionFactory sessionFactory=(SessionFactory) getContext().getBean("sessionFactory");
         
         Map<String,ClassMetadata> classMetaDataMap=sessionFactory.getAllClassMetadata();
@@ -90,10 +91,15 @@ public class EntityUtil {
         }
         
         AnnotationSessionFactoryBean sessionFactoryBean=(AnnotationSessionFactoryBean) getContext().getBean("&sessionFactory");
+        Field f=LocalSessionFactoryBean.class.getDeclaredField("configTimeDataSourceHolder");
+        f.setAccessible(true);
+        ThreadLocal<DataSource> configTimeDataSourceHolder=(ThreadLocal<DataSource>) f.get(sessionFactoryBean);
+        configTimeDataSourceHolder.set(sessionFactoryBean.getDataSource());
         Configuration config=sessionFactoryBean.getConfiguration();
         config.addAnnotatedClass(entityClass);
         SessionFactory newSessionFactory=config.buildSessionFactory();
         sessionFactories.add(newSessionFactory);
+        configTimeDataSourceHolder.remove();
         return newSessionFactory;
     }
 }

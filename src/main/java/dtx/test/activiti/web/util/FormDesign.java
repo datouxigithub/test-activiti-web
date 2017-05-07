@@ -5,16 +5,30 @@
  */
 package dtx.test.activiti.web.util;
 
-import java.beans.BeanInfo;
+import dtx.test.activiti.web.model.CustomFormClassModel;
+import dtx.test.activiti.web.model.CustomFormInfoModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.NotFoundException;
+import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.annotation.Annotation;
+import javassist.bytecode.annotation.BooleanMemberValue;
+import javassist.bytecode.annotation.StringMemberValue;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.cfg.NamingStrategy;
+import org.hibernate.SessionFactory;
+import org.json.JSONObject;
 
 /**
  *
@@ -22,11 +36,28 @@ import org.hibernate.cfg.NamingStrategy;
  */
 public class FormDesign {
     
-    public Map<String,Object> parseForm(String template){
+    public final static String PACKAGE="dtx.test.activiti.web.model";
+    
+    public CustomFormInfoModel parseForm(String customName,String template){
+        CustomFormInfoModel customForm=new CustomFormInfoModel();
+        customForm.setCustomName(customName);
+        CustomFormClassModel formClass=new CustomFormClassModel();
+        formClass.setFormClassName(obtainCustomClassName());
+        customForm.setCustomFormClass(formClass);
+        JSONObject result=parseForm(template);
+        customForm.setTemplate((String) result.get("template"));
+        customForm.setParse((String) result.get("parse"));
+        customForm.setFields((int) result.get("fields"));
+        customForm.setAddFields(result.get("add_fields").toString());
+        customForm.setPluginData(result.get("data").toString());
+        return customForm;
+    }
+    
+    public JSONObject parseForm(String template){
         return parseForm(template, 0);
     }
     
-    public Map<String,Object> parseForm(String template,int fields){
+    public JSONObject parseForm(String template,int fields){
         
         String templateParse=template;
         
@@ -181,7 +212,7 @@ public class FormDesign {
         parseForm.put("parse", templateParse);
         parseForm.put("data", templateData);
         parseForm.put("add_fields", addFields);
-        return parseForm;
+        return new JSONObject(parseForm);
     }
     
     private String strReplaceOnce(String needle,String replace,String hayStack){
@@ -216,15 +247,6 @@ public class FormDesign {
         return result;
     }
     
-    private void print(List<List<String>> list){
-        for(List<String> strList:list){
-            System.out.println("------------------------------------------------------------------");
-            for(String str:strList)
-                System.out.println(str);
-        }
-        System.out.println("----------------------"+list.toString()+"------------------------------");
-    }
-    
     private String fieldTypeSql(String leipiplugins){
         switch(leipiplugins){
             case "textarea":
@@ -232,6 +254,64 @@ public class FormDesign {
             case "checkboxs":return "tinyint(1) UNSIGNED NOT NULL DEFAULT 0";
             default:return "varchar(255) NOT NULL DEFAULT ''";
         }
+    }
+    
+    private CtClass fieldType(String leipiplugins) throws NotFoundException{
+        switch(leipiplugins){
+            case "checkboxs":return CtClass.booleanType;
+            default:return ClassPool.getDefault().get("java.lang.String");
+        }
+    }
+    
+    private String getter(String field,CtClass fieldTypeClass){
+        return String.format("public %s get%s(){return this.%s;}",fieldTypeClass.getName(),methodName(field),field);
+    }
+    
+    private String setter(String field,CtClass fieldTypeClass){
+        return String.format("public void set%s(%s value){this.%s=value;}", methodName(field),fieldTypeClass.getName(),field);
+    }
+    
+    private String methodName(String field){
+        return (field.substring(0, 1).toUpperCase()+field.substring(1)).replace("_", "");
+    }
+    
+    public String obtainCustomClassName(){
+        return "UserForm"+UUID.randomUUID().toString().replace("-", "");
+    }
+    
+    public CtClass obtainTableClass(String className,String tableName,JSONObject addFields) throws NotFoundException, CannotCompileException{
+        ClassPool pool=ClassPool.getDefault();
+        CtClass newClass=pool.makeClass(className);
+        newClass.setSuperclass(pool.get(FormDesign.PACKAGE+".DefaultUserForm"));
+        ClassFile classFile=newClass.getClassFile();
+        
+        AnnotationsAttribute classAttr=new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
+        classAttr.addAnnotation(new Annotation("javax.persistence.Entity", classFile.getConstPool()));
+        if(tableName!=null&&!"".equals(tableName)){
+            Annotation tableAnnot=new Annotation("javax.persistence.Table", classFile.getConstPool());
+            tableAnnot.addMemberValue("name", new StringMemberValue(tableName, classFile.getConstPool()));
+            classAttr.addAnnotation(tableAnnot);
+        }
+        classFile.addAttribute(classAttr);
+        
+        Iterator iter=addFields.keys();
+        while(iter.hasNext()){
+            JSONObject value=addFields.getJSONObject((String) iter.next());
+            CtClass fieldTypeClass=fieldType((String) value.get("leipiplugins"));
+            CtField ctf=new CtField(fieldTypeClass, (String) value.get("name"), newClass);
+            newClass.addField(ctf);
+            newClass.addMethod(CtMethod.make(setter((String) value.get("name"), fieldTypeClass), newClass));
+            CtMethod getter=CtMethod.make(getter((String) value.get("name"), fieldTypeClass), newClass);
+            AnnotationsAttribute getterAttr=new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
+            Annotation notNullAnnot=new Annotation("javax.persistence.Column", classFile.getConstPool());
+            notNullAnnot.addMemberValue("nullable", new BooleanMemberValue(false, classFile.getConstPool()));
+            notNullAnnot.addMemberValue("columnDefinition", new StringMemberValue("text", classFile.getConstPool()));
+            getterAttr.addAnnotation(notNullAnnot);
+            getter.getMethodInfo().addAttribute(getterAttr);
+            newClass.addMethod(getter);
+        }
+        
+        return newClass;
     }
     
     public String parseTable(String tableName,Map addFields){
@@ -256,9 +336,13 @@ public class FormDesign {
                 +") ENGINE=MyISAM DEFAULT CHARSET=utf8;";
     }
     
-    public static void main(String[] args) {
-        Map<String,Object> result=new FormDesign().parseForm("<p style=\"text-align: center;\"><br/></p><p style=\"text-align: center;\"><span style=\"font-size: 24px;\">示例表</span></p><table class=\"table table-bordered\"><tbody><tr class=\"firstRow\"><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\">文本框</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"227\"><input style=\"text-align: left; width: 150px;\" title=\"文本框\" value=\"雷劈网\" name=\"leipiNewField\" orgheight=\"\" orgwidth=\"150\" orgalign=\"left\" orgfontsize=\"\" orghide=\"0\" leipiplugins=\"text\" orgtype=\"text\"/></td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"85\">下拉菜单</td><td valign=\"top\" style=\"border-color: rgb(221, 221, 221);\" width=\"312\">{|-<span leipiplugins=\"select\"><select name=\"leipiNewField\" title=\"下拉菜单\" leipiplugins=\"select\" size=\"1\" orgwidth=\"150\" style=\"width: 150px;\"><option value=\"下拉\">下拉</option><option value=\"菜单\">菜单</option></select>&nbsp;&nbsp;</span>-|}</td></tr><tr><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\">单选</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"41\">{|-<span leipiplugins=\"radios\" title=\"单选\" name=\"leipiNewField\"><input value=\"单选1\" type=\"radio\" checked=\"checked\"/>单选1&nbsp;<input value=\"单选2\" type=\"radio\"/>单选2&nbsp;</span>-|}</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"85\">复选</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"312\">{|-<span leipiplugins=\"checkboxs\" title=\"复选\"><input name=\"leipiNewField\" value=\"复选1\" type=\"checkbox\" checked=\"checked\"/>复选1&nbsp;<input name=\"leipiNewField\" value=\"复选2\" type=\"checkbox\" checked=\"checked\"/>复选2&nbsp;<input name=\"leipiNewField\" value=\"复选3\" type=\"checkbox\"/>复选3&nbsp;</span>-|}</td></tr><tr><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\">宏控件</td><td valign=\"top\" style=\"border-color: rgb(221, 221, 221);\" width=\"41\"><input name=\"leipiNewField\" type=\"text\" value=\"{macros}\" title=\"宏控件\" leipiplugins=\"macros\" orgtype=\"sys_date_cn\" orghide=\"0\" orgfontsize=\"12\" orgwidth=\"150\" style=\"font-size: 12px; width: 150px;\"/></td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"85\">二维码</td><td valign=\"top\" style=\"border-color: rgb(221, 221, 221);\" width=\"312\"><img name=\"leipiNewField\" title=\"雷劈网\" value=\"http://www.leipi.org\" orgtype=\"url\" leipiplugins=\"qrcode\" src=\"/Public/js/ueditor/formdesign/images/qrcode.gif\" orgwidth=\"40\" orgheight=\"40\" style=\"width: 40px; height: 40px;\"/></td></tr></tbody></table><p><input name=\"leipiNewField\" leipiplugins=\"listctrl\" type=\"text\" value=\"{列表控件}\" readonly=\"readonly\" title=\"采购商品列表\" orgtitle=\"商品名称`数量`单价`小计`描述`\" orgcoltype=\"text`int`int`int`text`\" orgunit=\"```元``\" orgsum=\"0`0`0`1`0`\" orgcolvalue=\"`````\" orgwidth=\"100%\" style=\"width: 100%;\"/></p><p><textarea title=\"多行文本\" name=\"leipiNewField\" leipiplugins=\"textarea\" value=\"\" orgrich=\"0\" orgfontsize=\"12\" orgwidth=\"600\" orgheight=\"80\" style=\"font-size:12px;width:600px;height:80px;\"></textarea></p><p><img name=\"leipiNewField\" title=\"进度条\" leipiplugins=\"progressbar\" orgvalue=\"20\" orgsigntype=\"progress-info\" src=\"/Public/js/ueditor/formdesign/images/progressbar.gif\"/></p>");
-        System.out.println(new FormDesign().parseTable("test-form-design", (Map) result.get("add_fields")));
+    public static void main(String[] args) throws Exception {
+        FormDesign fd=new FormDesign();
+        CustomFormInfoModel customFormInfoModel=fd.parseForm("测试表单", "<p style=\"text-align: center;\"><br/></p><p style=\"text-align: center;\"><span style=\"font-size: 24px;\">示例表</span></p><table class=\"table table-bordered\"><tbody><tr class=\"firstRow\"><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\">文本框</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"227\"><input style=\"text-align: left; width: 150px;\" title=\"文本框\" value=\"雷劈网\" name=\"leipiNewField\" orgheight=\"\" orgwidth=\"150\" orgalign=\"left\" orgfontsize=\"\" orghide=\"0\" leipiplugins=\"text\" orgtype=\"text\"/></td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"85\">下拉菜单</td><td valign=\"top\" style=\"border-color: rgb(221, 221, 221);\" width=\"312\">{|-<span leipiplugins=\"select\"><select name=\"leipiNewField\" title=\"下拉菜单\" leipiplugins=\"select\" size=\"1\" orgwidth=\"150\" style=\"width: 150px;\"><option value=\"下拉\">下拉</option><option value=\"菜单\">菜单</option></select>&nbsp;&nbsp;</span>-|}</td></tr><tr><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\">单选</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"41\">{|-<span leipiplugins=\"radios\" title=\"单选\" name=\"leipiNewField\"><input value=\"单选1\" type=\"radio\" checked=\"checked\"/>单选1&nbsp;<input value=\"单选2\" type=\"radio\"/>单选2&nbsp;</span>-|}</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"85\">复选</td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"312\">{|-<span leipiplugins=\"checkboxs\" title=\"复选\"><input name=\"leipiNewField\" value=\"复选1\" type=\"checkbox\" checked=\"checked\"/>复选1&nbsp;<input name=\"leipiNewField\" value=\"复选2\" type=\"checkbox\" checked=\"checked\"/>复选2&nbsp;<input name=\"leipiNewField\" value=\"复选3\" type=\"checkbox\"/>复选3&nbsp;</span>-|}</td></tr><tr><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\">宏控件</td><td valign=\"top\" style=\"border-color: rgb(221, 221, 221);\" width=\"41\"><input name=\"leipiNewField\" type=\"text\" value=\"{macros}\" title=\"宏控件\" leipiplugins=\"macros\" orgtype=\"sys_date_cn\" orghide=\"0\" orgfontsize=\"12\" orgwidth=\"150\" style=\"font-size: 12px; width: 150px;\"/></td><td valign=\"top\" style=\"word-break: break-all; border-color: rgb(221, 221, 221);\" width=\"85\">二维码</td><td valign=\"top\" style=\"border-color: rgb(221, 221, 221);\" width=\"312\"><img name=\"leipiNewField\" title=\"雷劈网\" value=\"http://www.leipi.org\" orgtype=\"url\" leipiplugins=\"qrcode\" src=\"/Public/js/ueditor/formdesign/images/qrcode.gif\" orgwidth=\"40\" orgheight=\"40\" style=\"width: 40px; height: 40px;\"/></td></tr></tbody></table><p><input name=\"leipiNewField\" leipiplugins=\"listctrl\" type=\"text\" value=\"{列表控件}\" readonly=\"readonly\" title=\"采购商品列表\" orgtitle=\"商品名称`数量`单价`小计`描述`\" orgcoltype=\"text`int`int`int`text`\" orgunit=\"```元``\" orgsum=\"0`0`0`1`0`\" orgcolvalue=\"`````\" orgwidth=\"100%\" style=\"width: 100%;\"/></p><p><textarea title=\"多行文本\" name=\"leipiNewField\" leipiplugins=\"textarea\" value=\"\" orgrich=\"0\" orgfontsize=\"12\" orgwidth=\"600\" orgheight=\"80\" style=\"font-size:12px;width:600px;height:80px;\"></textarea></p><p><img name=\"leipiNewField\" title=\"进度条\" leipiplugins=\"progressbar\" orgvalue=\"20\" orgsigntype=\"progress-info\" src=\"/Public/js/ueditor/formdesign/images/progressbar.gif\"/></p>");
+        CtClass ctc=fd.obtainTableClass(customFormInfoModel.getCustomFormClass().getFormClassName(), null, new JSONObject(customFormInfoModel.getAddFields()));
+        SessionFactory sf=EntityUtil.obtanSessionFactory(ctc.toClass());
+        customFormInfoModel.getCustomFormClass().setClassSource(ctc.toBytecode());
+        sf.getCurrentSession().save(customFormInfoModel.getCustomFormClass());
     }
     
 }

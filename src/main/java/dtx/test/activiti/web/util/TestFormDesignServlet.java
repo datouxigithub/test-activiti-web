@@ -26,13 +26,13 @@ public class TestFormDesignServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         request.setCharacterEncoding("utf-8");
-        Map<String,Object> result=new FormDesign().parseForm(request.getParameter("design_content"));
+//        Map<String,Object> result=new FormDesign().parseForm(request.getParameter("design_content"));
 //        response.getWriter().write(result.toString());
 //        response.getWriter().write(result.get("template").toString());
 //        response.getWriter().write(request.getParameter("design_content"));
-        request.setAttribute("parseForm", new JSONObject(result).toString());
-        RequestDispatcher dispatcher=request.getRequestDispatcher("show.jsp");
-        dispatcher.forward(request, response);
+//        request.setAttribute("parseForm", new JSONObject(result).toString());
+//        RequestDispatcher dispatcher=request.getRequestDispatcher("show.jsp");
+//        dispatcher.forward(request, response);
     }
 
     @Override

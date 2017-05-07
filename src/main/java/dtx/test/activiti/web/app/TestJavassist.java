@@ -57,8 +57,7 @@ public class TestJavassist {
         classAttr.addAnnotation(classAnnot);
         newClass.getClassFile().addAttribute(classAttr);
         
-        SessionFactory sessionFactory=(SessionFactory) EntityUtil.obtanSessionFactory(newClass.toClass());
-        sessionFactory.close();
+        EntityUtil.obtanSessionFactory(newClass.toClass());
     }
     
     private static String getter(String field){
