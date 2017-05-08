@@ -6,6 +6,7 @@
 package dtx.test.activiti.web.util;
 
 import dtx.test.activiti.web.app.CustomUserFormClassLoader;
+import dtx.test.activiti.web.dao.TestDao;
 import dtx.test.activiti.web.model.CustomFormClassModel;
 import dtx.test.activiti.web.model.CustomFormInfoModel;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.json.JSONObject;
+import org.springframework.orm.hibernate3.SpringSessionContext;
 
 /**
  *
@@ -344,11 +346,12 @@ public class FormDesign {
         CtClass ctc=fd.obtainTableClass(customFormInfoModel.getCustomFormClass().getFormClassName(), null, new JSONObject(customFormInfoModel.getAddFields()));
         SessionFactory sf=EntityUtil.obtanSessionFactory(ctc.toClass());
         customFormInfoModel.getCustomFormClass().setClassSource(ctc.toBytecode());
-        Session session=sf.getCurrentSession();
-        session.beginTransaction();
-        session.save(customFormInfoModel.getCustomFormClass());
-        session.getTransaction().commit();
+//        Session session=sf.getCurrentSession();
+//        session.beginTransaction();
+//        session.save(customFormInfoModel.getCustomFormClass());
+//        session.getTransaction().commit();
 //        session.close();
+        ((TestDao)EntityUtil.getContext().getBean("testDao")).save(customFormInfoModel.getCustomFormClass(), sf);
         
         ClassLoader loader=new CustomUserFormClassLoader();
         Class clazz=loader.loadClass(customFormInfoModel.getCustomFormClass().getFormClassName());
