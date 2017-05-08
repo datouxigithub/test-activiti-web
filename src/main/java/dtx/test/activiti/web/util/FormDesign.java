@@ -5,6 +5,7 @@
  */
 package dtx.test.activiti.web.util;
 
+import dtx.test.activiti.web.app.CustomUserFormClassLoader;
 import dtx.test.activiti.web.model.CustomFormClassModel;
 import dtx.test.activiti.web.model.CustomFormInfoModel;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.BooleanMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.json.JSONObject;
 
@@ -342,7 +344,16 @@ public class FormDesign {
         CtClass ctc=fd.obtainTableClass(customFormInfoModel.getCustomFormClass().getFormClassName(), null, new JSONObject(customFormInfoModel.getAddFields()));
         SessionFactory sf=EntityUtil.obtanSessionFactory(ctc.toClass());
         customFormInfoModel.getCustomFormClass().setClassSource(ctc.toBytecode());
-        sf.getCurrentSession().save(customFormInfoModel.getCustomFormClass());
+        Session session=sf.getCurrentSession();
+        session.beginTransaction();
+        session.save(customFormInfoModel.getCustomFormClass());
+        session.getTransaction().commit();
+//        session.close();
+        
+        ClassLoader loader=new CustomUserFormClassLoader();
+        Class clazz=loader.loadClass(customFormInfoModel.getCustomFormClass().getFormClassName());
+        Object obj=clazz.newInstance();
+        System.out.println(obj.toString());
     }
     
 }
