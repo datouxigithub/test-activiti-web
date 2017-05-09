@@ -42,6 +42,10 @@ public class EntityUtil {
         return context;
     }
     
+    public static SessionFactory getSessionFactory(){
+        return (SessionFactory) context.getBean("sessionFactory");
+    }
+    
     public static ProcessEngine getProcessEngine(){
         return (ProcessEngine) context.getBean("processEngine");
     }
