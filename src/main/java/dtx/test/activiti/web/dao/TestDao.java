@@ -5,6 +5,7 @@
  */
 package dtx.test.activiti.web.dao;
 
+import dtx.test.activiti.web.app.DynamicSessionFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 

@@ -5,6 +5,7 @@
  */
 package dtx.test.activiti.web.util;
 
+import dtx.test.activiti.web.app.DynamicSessionFactory;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,10 @@ public class EntityUtil {
     
     public static SessionFactory getSessionFactory(){
         return (SessionFactory) context.getBean("sessionFactory");
+    }
+    
+    public static DynamicSessionFactory getDynamicSessionFactory(){
+        return (DynamicSessionFactory) context.getBean("dynamicSessionFactory");
     }
     
     public static ProcessEngine getProcessEngine(){

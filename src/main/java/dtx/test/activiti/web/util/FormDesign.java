@@ -6,6 +6,7 @@
 package dtx.test.activiti.web.util;
 
 import dtx.test.activiti.web.app.CustomUserFormClassLoader;
+import dtx.test.activiti.web.app.DynamicSessionFactory;
 import dtx.test.activiti.web.dao.TestDao;
 import dtx.test.activiti.web.model.CustomFormClassModel;
 import dtx.test.activiti.web.model.CustomFormInfoModel;
@@ -351,7 +352,9 @@ public class FormDesign {
 //        session.save(customFormInfoModel.getCustomFormClass());
 //        session.getTransaction().commit();
 //        session.close();
-        SessionFactory sf=EntityUtil.getSessionFactory();
+//        SessionFactory sf=EntityUtil.getSessionFactory();
+        DynamicSessionFactory sf=EntityUtil.getDynamicSessionFactory();
+        sf.setEntityClass(customFormInfoModel.getCustomFormClass().getClass());
         TestDao td=(TestDao) EntityUtil.getContext().getBean("testDao");
         CustomFormClassModel formClass=customFormInfoModel.getCustomFormClass();
 //        ((TestDao)EntityUtil.getContext().getBean("testDao")).save(customFormInfoModel.getCustomFormClass(), sf);
