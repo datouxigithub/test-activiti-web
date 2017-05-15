@@ -5,9 +5,9 @@
  */
 package dtx.test.activiti.web.dao;
 
-import dtx.test.activiti.web.app.DynamicSessionFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.springframework.orm.hibernate3.SessionFactoryUtils;
 
 /**
  *
@@ -16,7 +16,7 @@ import org.hibernate.SessionFactory;
 public class TestDao{
     
     public void save(Object obj,SessionFactory sf){
-        Session session=sf.getCurrentSession();
+        Session session=SessionFactoryUtils.getSession(sf, false);
         session.save(obj);
     }
     

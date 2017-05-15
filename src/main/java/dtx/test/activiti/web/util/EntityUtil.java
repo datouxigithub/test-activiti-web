@@ -48,7 +48,9 @@ public class EntityUtil {
     }
     
     public static DynamicSessionFactory getDynamicSessionFactory(){
-        return (DynamicSessionFactory) context.getBean("dynamicSessionFactory");
+        DynamicSessionFactory dynamicSessionFactory=(DynamicSessionFactory) context.getBean("dynamicSessionFactory");
+//        dynamicSessionFactory.initCustomFormClasses();
+        return dynamicSessionFactory;
     }
     
     public static ProcessEngine getProcessEngine(){

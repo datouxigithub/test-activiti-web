@@ -8,6 +8,7 @@ package dtx.test.activiti.web.dao;
 import dtx.oa.rbac.basic.BasicDao;
 import dtx.test.activiti.web.idao.ICustomFormClassDao;
 import dtx.test.activiti.web.model.CustomFormClassModel;
+import java.util.List;
 
 /**
  *
@@ -17,7 +18,12 @@ public class CustomFormClassDao extends BasicDao implements ICustomFormClassDao{
 
     @Override
     public CustomFormClassModel getByClassName(String className) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return (CustomFormClassModel) executeQuery("FROM CustomFormClassModel customFormClassModel WHERE customFormClassModel.formClassName=?", new Object[]{className}).get(0);
+    }
+
+    @Override
+    public List<CustomFormClassModel> getCustomFormClassModels() {
+        return executeQuery("FROM CustomFormClassModel", null);
     }
     
 }

@@ -5,14 +5,15 @@
  */
 package dtx.test.activiti.web.app;
 
+import dtx.test.activiti.web.idao.ICustomFormClassDao;
 import dtx.test.activiti.web.util.EntityUtil;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.sql.DataSource;
@@ -36,26 +37,23 @@ import org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBea
  * @author gg
  */
 public class DynamicSessionFactory implements SessionFactory{
-
-    private final List<SessionFactory> sessionFactories=new ArrayList<>();
-    private final ThreadLocal<Class<?>> classHolder=new ThreadLocal<>();
     
-    public void setEntityClass(Class<?> clazz){
-        classHolder.set(clazz);
+    private final ThreadLocal<Stack<SessionFactory>> sessionFactoryHolder=new ThreadLocal<>();
+    private final ThreadLocal<Boolean> isInitCustomFormClassHolder=new ThreadLocal<>();
+    
+    public SessionFactory getSessionFactory(){
+        if(sessionFactoryHolder.get()==null)
+            sessionFactoryHolder.set(new Stack<SessionFactory>());
+        if(sessionFactoryHolder.get().isEmpty())
+            sessionFactoryHolder.get().push(EntityUtil.getSessionFactory());
+        return sessionFactoryHolder.get().peek();
     }
-     
-    private SessionFactory getSessionFactory(Class<?> entityClass) throws ReflectiveOperationException, IllegalArgumentException{
-        SessionFactory sessionFactory=EntityUtil.getSessionFactory();
+    
+    public void createNewSessionFactory(Class<?> entityClass) throws ReflectiveOperationException, IllegalArgumentException{
+        SessionFactory sessionFactory=getSessionFactory();
         Set<String> keySet=sessionFactory.getAllClassMetadata().keySet();
         if(keySet.contains(entityClass.getName()))
-        return sessionFactory;
-
-        for(SessionFactory sf:sessionFactories){
-            keySet=sf.getAllClassMetadata().keySet();
-            if(keySet.contains(entityClass.getName())){
-                return sf;
-            }
-        }
+            return;
 
         AnnotationSessionFactoryBean annotationSessionFactoryBean=(AnnotationSessionFactoryBean) EntityUtil.getContext().getBean("&sessionFactory");
         Field f=LocalSessionFactoryBean.class.getDeclaredField("configTimeDataSourceHolder");
@@ -64,27 +62,42 @@ public class DynamicSessionFactory implements SessionFactory{
         configTimeDataSourceHolder.set(annotationSessionFactoryBean.getDataSource());
         Configuration config=annotationSessionFactoryBean.getConfiguration();
         config.addAnnotatedClass(entityClass);
-        SessionFactory newSessionFactory=config.buildSessionFactory();
-        sessionFactories.add(newSessionFactory);
+        sessionFactoryHolder.get().push(config.buildSessionFactory());
         configTimeDataSourceHolder.remove();
-
-        return newSessionFactory;
     }
-
-    public SessionFactory getSessionFactory(){
-        Class<?> entityClass=classHolder.get();
-        if(entityClass==null)
-            return EntityUtil.getSessionFactory();
-        else{
-            try {
-                return getSessionFactory(entityClass);
-            } catch (ReflectiveOperationException | IllegalArgumentException ex) {
-                classHolder.set(null);
-                throw new RuntimeException(ex);
-            }
+    
+    public void createNewSessionFactory(List<Class<?>> classes) throws ReflectiveOperationException, IllegalArgumentException{
+        SessionFactory sessionFactory=getSessionFactory();
+        Set<String> keySet=sessionFactory.getAllClassMetadata().keySet();
+        
+        AnnotationSessionFactoryBean annotationSessionFactoryBean=(AnnotationSessionFactoryBean) EntityUtil.getContext().getBean("&sessionFactory");
+        Field f=LocalSessionFactoryBean.class.getDeclaredField("configTimeDataSourceHolder");
+        f.setAccessible(true);
+        ThreadLocal<DataSource> configTimeDataSourceHolder=(ThreadLocal<DataSource>) f.get(annotationSessionFactoryBean);
+        configTimeDataSourceHolder.set(annotationSessionFactoryBean.getDataSource());
+        Configuration config=annotationSessionFactoryBean.getConfiguration();
+        for(Class clazz:classes){
+            if(keySet.contains(clazz.getName()))continue;
+            config.addAnnotatedClass(clazz);
+        }
+        sessionFactoryHolder.get().push(config.buildSessionFactory());
+        configTimeDataSourceHolder.remove();
+    }
+    
+    public void initCustomFormClasses(){
+        if(isInitCustomFormClassHolder.get()==null)
+            isInitCustomFormClassHolder.set(false);
+        if(isInitCustomFormClassHolder.get()==true)
+            return;
+        ICustomFormClassDao dao=(ICustomFormClassDao) EntityUtil.getContext().getBean("customFormClassDao");
+        try {
+            createNewSessionFactory(new CustomUserFormClassLoader().loadClass(dao.getCustomFormClassModels()));
+        } catch (Exception ex) {
+        } finally{
+            isInitCustomFormClassHolder.set(true);
         }
     }
-
+    
     @Override
     public Session openSession() throws HibernateException {
         return getSessionFactory().openSession();

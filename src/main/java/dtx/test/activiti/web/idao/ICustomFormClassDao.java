@@ -7,6 +7,7 @@ package dtx.test.activiti.web.idao;
 
 import dtx.oa.rbac.basic.BasicDaoInter;
 import dtx.test.activiti.web.model.CustomFormClassModel;
+import java.util.List;
 
 /**
  *
@@ -14,4 +15,5 @@ import dtx.test.activiti.web.model.CustomFormClassModel;
  */
 public interface ICustomFormClassDao extends BasicDaoInter{
     CustomFormClassModel getByClassName(String className);
+    List<CustomFormClassModel> getCustomFormClassModels();
 }
