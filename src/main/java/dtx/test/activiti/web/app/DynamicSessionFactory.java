@@ -5,7 +5,6 @@
  */
 package dtx.test.activiti.web.app;
 
-import dtx.test.activiti.web.idao.ICustomFormClassDao;
 import dtx.test.activiti.web.util.EntityUtil;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -39,7 +38,6 @@ import org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBea
 public class DynamicSessionFactory implements SessionFactory{
     
     private final ThreadLocal<Stack<SessionFactory>> sessionFactoryHolder=new ThreadLocal<>();
-    private final ThreadLocal<Boolean> isInitCustomFormClassHolder=new ThreadLocal<>();
     
     public SessionFactory getSessionFactory(){
         if(sessionFactoryHolder.get()==null)
@@ -82,20 +80,6 @@ public class DynamicSessionFactory implements SessionFactory{
         }
         sessionFactoryHolder.get().push(config.buildSessionFactory());
         configTimeDataSourceHolder.remove();
-    }
-    
-    public void initCustomFormClasses(){
-        if(isInitCustomFormClassHolder.get()==null)
-            isInitCustomFormClassHolder.set(false);
-        if(isInitCustomFormClassHolder.get()==true)
-            return;
-        ICustomFormClassDao dao=(ICustomFormClassDao) EntityUtil.getContext().getBean("customFormClassDao");
-        try {
-            createNewSessionFactory(new CustomUserFormClassLoader().loadClass(dao.getCustomFormClassModels()));
-        } catch (Exception ex) {
-        } finally{
-            isInitCustomFormClassHolder.set(true);
-        }
     }
     
     @Override

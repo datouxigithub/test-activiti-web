@@ -5,6 +5,7 @@
  */
 package dtx.test.activiti.web.util;
 
+import dtx.test.activiti.web.app.CustomFormClassHelper;
 import dtx.test.activiti.web.app.DynamicSessionFactory;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -48,9 +49,11 @@ public class EntityUtil {
     }
     
     public static DynamicSessionFactory getDynamicSessionFactory(){
-        DynamicSessionFactory dynamicSessionFactory=(DynamicSessionFactory) context.getBean("dynamicSessionFactory");
-//        dynamicSessionFactory.initCustomFormClasses();
-        return dynamicSessionFactory;
+        return (DynamicSessionFactory) context.getBean("dynamicSessionFactory");
+    }
+    
+    public static CustomFormClassHelper getCustomFormClassHelper(){
+        return (CustomFormClassHelper) context.getBean("customFormClassHelper");
     }
     
     public static ProcessEngine getProcessEngine(){

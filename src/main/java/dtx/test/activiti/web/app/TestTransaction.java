@@ -15,8 +15,9 @@ import javassist.CannotCompileException;
  */
 public class TestTransaction {
     public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException, CannotCompileException {
-//        DynamicSessionFactory dynamicSessionFactory=EntityUtil.getDynamicSessionFactory();
-        Class clazz=new CustomUserFormClassLoader().findClass("dtx.test.activiti.web.model.UserForm59710aa7897949ec8e76fa7a20a67994");
+        CustomFormClassHelper helper=EntityUtil.getCustomFormClassHelper();
+        helper.initExistsClasses();
+        Class clazz=Class.forName("dtx.test.activiti.web.model.UserForm6d90a5161d3f4099ab89414b0862adc7");
         Object obj=clazz.newInstance();
         System.out.println(obj.toString());
     }
