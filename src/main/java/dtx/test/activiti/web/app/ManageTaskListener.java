@@ -18,9 +18,9 @@ public class ManageTaskListener implements TaskListener{
     public static final Stack<String> sampleUsers=new Stack<>();
     
     static{
-        sampleUsers.add("张三");
-        sampleUsers.add("李四");
         sampleUsers.add("王五");
+        sampleUsers.add("李四");
+        sampleUsers.add("张三");
     }
 
     @Override

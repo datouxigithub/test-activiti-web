@@ -108,6 +108,9 @@
     <bean id="customFormClassDao" class="dtx.test.activiti.web.dao.CustomFormClassDao">
         <property name="sessionFactory" ref="dynamicSessionFactory" />
     </bean>
+    <bean id="customFormInfoDao" class="dtx.test.activiti.web.dao.CustomFormInfoDao">
+        <property name="sessionFactory" ref="dynamicSessionFactory" />
+    </bean>
     <bean id="customClassLoader" class="dtx.test.activiti.web.app.CustomClassLoader" />
     <bean id="customFormClassHelper" class="dtx.test.activiti.web.app.CustomFormClassHelper">
         <property name="customClassLoader" ref="customClassLoader" />
