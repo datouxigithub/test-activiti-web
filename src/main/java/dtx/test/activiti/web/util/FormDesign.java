@@ -9,6 +9,9 @@ import dtx.test.activiti.web.app.DynamicSessionFactory;
 import dtx.test.activiti.web.dao.TestDao;
 import dtx.test.activiti.web.model.CustomFormClassModel;
 import dtx.test.activiti.web.model.CustomFormInfoModel;
+import dtx.test.activiti.web.model.DefaultUserForm;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -275,6 +278,11 @@ public class FormDesign {
     
     private String methodName(String field){
         return (field.substring(0, 1).toUpperCase()+field.substring(1)).replace("_", "");
+    }
+    
+    public void setFormFieldValue(DefaultUserForm form,String field,Object value) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+        Method method=form.getClass().getMethod(String.format("set%s", methodName(field)));
+        method.invoke(form, value);
     }
     
     public String obtainCustomClassName(){

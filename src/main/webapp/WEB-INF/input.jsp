@@ -6,7 +6,7 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <form>
+        <form method="POST" action="${pageContext.servletContext.contextPath}/test/submit">
             <div>${formInfo.template}</div>
             <div>
                 <textarea name="content"></textarea>
