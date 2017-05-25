@@ -10,6 +10,7 @@ import dtx.test.activiti.web.dao.TestDao;
 import dtx.test.activiti.web.model.CustomFormClassModel;
 import dtx.test.activiti.web.model.CustomFormInfoModel;
 import dtx.test.activiti.web.model.DefaultUserForm;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
+import javassist.Modifier;
 import javassist.NotFoundException;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -277,12 +279,18 @@ public class FormDesign {
     }
     
     private String methodName(String field){
-        return (field.substring(0, 1).toUpperCase()+field.substring(1)).replace("_", "");
+//        return (field.substring(0, 1).toUpperCase()+field.substring(1)).replace("_", "");
+        return (field.substring(0, 1).toUpperCase()+field.substring(1));
     }
     
-    public void setFormFieldValue(DefaultUserForm form,String field,Object value) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
-        Method method=form.getClass().getMethod(String.format("set%s", methodName(field)));
-        method.invoke(form, value);
+    public void setFormFieldValue(Object form,String field,Object value) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
+        if(!(form instanceof DefaultUserForm))return;
+        Field f=form.getClass().getDeclaredField(field);
+        f.setAccessible(true);
+        f.set(form, value);
+        f.setAccessible(false);
+//        Method method=form.getClass().getDeclaredMethod(String.format("set%s", methodName(field)));
+//        method.invoke(form, value);
     }
     
     public String obtainCustomClassName(){
@@ -294,6 +302,7 @@ public class FormDesign {
         CtClass newClass=pool.makeClass(className);
         newClass.setSuperclass(pool.get(FormDesign.PACKAGE+".DefaultUserForm"));
         ClassFile classFile=newClass.getClassFile();
+        classFile.setMajorVersion(ClassFile.JAVA_7);
         
         AnnotationsAttribute classAttr=new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
         classAttr.addAnnotation(new Annotation("javax.persistence.Entity", classFile.getConstPool()));
@@ -309,8 +318,10 @@ public class FormDesign {
             JSONObject value=addFields.getJSONObject((String) iter.next());
             CtClass fieldTypeClass=fieldType((String) value.get("leipiplugins"));
             CtField ctf=new CtField(fieldTypeClass, (String) value.get("name"), newClass);
+            ctf.setModifiers(Modifier.PRIVATE);
             newClass.addField(ctf);
-            newClass.addMethod(CtMethod.make(setter((String) value.get("name"), fieldTypeClass), newClass));
+            CtMethod setter=CtMethod.make(setter((String) value.get("name"), fieldTypeClass), newClass);
+            newClass.addMethod(setter);
             CtMethod getter=CtMethod.make(getter((String) value.get("name"), fieldTypeClass), newClass);
             AnnotationsAttribute getterAttr=new AnnotationsAttribute(classFile.getConstPool(), AnnotationsAttribute.visibleTag);
             Annotation notNullAnnot=new Annotation("javax.persistence.Column", classFile.getConstPool());

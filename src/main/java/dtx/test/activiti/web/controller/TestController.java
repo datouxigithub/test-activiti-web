@@ -10,10 +10,16 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import dtx.test.activiti.web.app.ManageTaskListener;
 import dtx.test.activiti.web.idao.ICustomFormInfoDao;
 import dtx.test.activiti.web.model.CustomFormInfoModel;
+import dtx.test.activiti.web.model.DefaultUserForm;
 import dtx.test.activiti.web.model.HolidayModel;
 import dtx.test.activiti.web.util.EntityUtil;
+import dtx.test.activiti.web.util.FormDesign;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javassist.CannotCompileException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,27 +46,26 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @RequestMapping(value = "/test")
-@SessionAttributes("formObj")
+@SessionAttributes("userForm")
 public class TestController {
     
     @RequestMapping(value = "input",method = RequestMethod.GET)
     public String input(@RequestParam("id") int id,Model model) throws IOException, CannotCompileException, InstantiationException, IllegalAccessException{
         ICustomFormInfoDao dao=(ICustomFormInfoDao) EntityUtil.getContext().getBean("customFormInfoDao");
         CustomFormInfoModel formInfo=dao.getById(id);
-//        model.addAttribute("formInfo", formInfo);
-        model.addAttribute("formObj",EntityUtil.getCustomFormClassHelper().loadClass(formInfo.getCustomFormClass()).newInstance());
+        model.addAttribute("formInfo", formInfo);
+        model.addAttribute("userForm",EntityUtil.getCustomFormClassHelper().loadClass(formInfo.getCustomFormClass()).newInstance());
         return "input";
     }
     
     @RequestMapping(value = "submit",method = RequestMethod.POST)
-    public void submit(@ModelAttribute("formObj") Object formObj,HttpServletRequest request,HttpServletResponse response) throws IOException{
-//        response.getWriter().write("<h1>"+formInfo.getCustomFormClass().getFormClassName()+"</h1>");
-        Enumeration<String> enumeration=request.getParameterNames();
-        while (enumeration.hasMoreElements()) {
-            String nextElement = enumeration.nextElement();
-            response.getWriter().write("<h2>"+nextElement+"</h2>");
-            response.getWriter().write("<h3>----------------------------"+request.getParameter(nextElement)+"</h3>");
+    public void submit(@ModelAttribute("userForm") Object userForm,HttpServletRequest request,HttpServletResponse response) throws IOException, IllegalArgumentException, IllegalAccessException{
+        Field[] fields=userForm.getClass().getDeclaredFields();
+        for(Field f:fields){
+            f.setAccessible(true);
+            response.getWriter().write("<h2>"+f.getName()+"------------"+f.get(userForm)+"</h2>");
         }
+        response.getWriter().write("<h1>content"+request.getParameter("content")+"</h1>");
     }
     
     @RequestMapping(value = "run/{modelId}")
