@@ -7,8 +7,12 @@ package dtx.test.activiti.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import dtx.test.activiti.web.app.CustomFormClassHelper;
+import dtx.test.activiti.web.app.DynamicSessionFactory;
 import dtx.test.activiti.web.app.ManageTaskListener;
+import dtx.test.activiti.web.dao.TestDao;
 import dtx.test.activiti.web.idao.ICustomFormInfoDao;
+import dtx.test.activiti.web.model.ApproverOptionModel;
 import dtx.test.activiti.web.model.CustomFormInfoModel;
 import dtx.test.activiti.web.model.DefaultUserForm;
 import dtx.test.activiti.web.model.HolidayModel;
@@ -17,7 +21,9 @@ import dtx.test.activiti.web.util.FormDesign;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javassist.CannotCompileException;
@@ -31,6 +37,7 @@ import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -46,26 +53,36 @@ import org.springframework.web.bind.annotation.SessionAttributes;
  */
 @Controller
 @RequestMapping(value = "/test")
-@SessionAttributes("userForm")
+//@SessionAttributes("userForm")
+@SessionAttributes(value = {"userForm"})
 public class TestController {
     
     @RequestMapping(value = "input",method = RequestMethod.GET)
-    public String input(@RequestParam("id") int id,Model model) throws IOException, CannotCompileException, InstantiationException, IllegalAccessException{
+    public String input(@RequestParam("id") int id,Model model) throws IOException, CannotCompileException, InstantiationException, IllegalAccessException, ClassNotFoundException{
         ICustomFormInfoDao dao=(ICustomFormInfoDao) EntityUtil.getContext().getBean("customFormInfoDao");
         CustomFormInfoModel formInfo=dao.getById(id);
         model.addAttribute("formInfo", formInfo);
-        model.addAttribute("userForm",EntityUtil.getCustomFormClassHelper().loadClass(formInfo.getCustomFormClass()).newInstance());
+        CustomFormClassHelper helper=EntityUtil.getCustomFormClassHelper();
+        helper.initExistsClasses();
+        model.addAttribute("userForm",Class.forName(formInfo.getCustomFormClass().getFormClassName()).newInstance());
         return "input";
     }
     
     @RequestMapping(value = "submit",method = RequestMethod.POST)
     public void submit(@ModelAttribute("userForm") Object userForm,HttpServletRequest request,HttpServletResponse response) throws IOException, IllegalArgumentException, IllegalAccessException{
-        Field[] fields=userForm.getClass().getDeclaredFields();
-        for(Field f:fields){
-            f.setAccessible(true);
-            response.getWriter().write("<h2>"+f.getName()+"------------"+f.get(userForm)+"</h2>");
-        }
-        response.getWriter().write("<h1>content"+request.getParameter("content")+"</h1>");
+        EntityUtil.getCustomFormClassHelper().initExistsClasses();
+        TestDao dao=(TestDao) EntityUtil.getContext().getBean("testDao");
+        DynamicSessionFactory dsf=EntityUtil.getDynamicSessionFactory();
+        Stack<SessionFactory> stack=dsf.view();
+        SessionFactory sessionFactory=dsf.getSessionFactory();
+        dao.save(userForm, sessionFactory);
+        ApproverOptionModel option=new ApproverOptionModel();
+        option.setAppvoer(ManageTaskListener.sampleUsers.pop());
+        option.setComment(request.getParameter("comment"));
+        option.setApprolDate(new Date());
+        option.setUserFormId(userForm.getClass().getSimpleName()+"."+((DefaultUserForm)userForm).getId());
+        dao.save(option, sessionFactory);
+        response.getWriter().write(option.toString());
     }
     
     @RequestMapping(value = "run/{modelId}")

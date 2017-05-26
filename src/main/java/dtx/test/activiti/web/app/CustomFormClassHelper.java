@@ -38,7 +38,8 @@ public class CustomFormClassHelper {
     }
     
     public Class<?> loadClass(CustomFormClassModel formClass) throws IOException, CannotCompileException{
-        return customClassLoader.loadClass(formClass.getClassSource());
+//        return customClassLoader.loadClass(formClass.getClassSource());
+        return customClassLoader.loadClass(formClass.getFormClassName(), formClass.getClassSource());
     }
     
     public List<Class<?>> loadClass(List<CustomFormClassModel> formClasses) throws IOException, CannotCompileException{
@@ -58,6 +59,7 @@ public class CustomFormClassHelper {
         try {
             dynamicSessionFactory.createNewSessionFactory(loadClass(dao.getCustomFormClassModels()));
         } catch (Exception ex) {
+            ex.printStackTrace();
         } finally{
             isInitCustomFormClassHolder.set(true);
         }

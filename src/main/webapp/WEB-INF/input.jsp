@@ -9,7 +9,7 @@
         <form method="POST" action="${pageContext.servletContext.contextPath}/test/submit">
             <div>${formInfo.template}</div>
             <div>
-                <textarea name="content"></textarea>
+                <textarea name="comment"></textarea>
             </div>
             <div>
                 <input type="submit" value="提交" />

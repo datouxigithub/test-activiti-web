@@ -39,6 +39,10 @@ public class DynamicSessionFactory implements SessionFactory{
     
     private final ThreadLocal<Stack<SessionFactory>> sessionFactoryHolder=new ThreadLocal<>();
     
+    public Stack<SessionFactory> view(){
+        return sessionFactoryHolder.get();
+    }
+    
     public SessionFactory getSessionFactory(){
         if(sessionFactoryHolder.get()==null)
             sessionFactoryHolder.set(new Stack<SessionFactory>());

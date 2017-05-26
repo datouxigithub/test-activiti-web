@@ -16,7 +16,7 @@ import org.hibernate.annotations.GenericGenerator;
 public class HolidayModel implements Serializable{
     private int id,days,status;
     private String reason;
-    private Set<ApproverOptionModel> options=new HashSet<>();
+//    private Set<ApproverOptionModel> options=new HashSet<>();
 
     @Id
     @GeneratedValue(generator = "increment")
@@ -56,12 +56,12 @@ public class HolidayModel implements Serializable{
         this.reason = reason;
     }
 
-    @OneToMany(mappedBy = "holidayModel",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
-    public Set<ApproverOptionModel> getOptions() {
-        return options;
-    }
-
-    public void setOptions(Set<ApproverOptionModel> options) {
-        this.options = options;
-    }
+//    @OneToMany(mappedBy = "holidayModel",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+//    public Set<ApproverOptionModel> getOptions() {
+//        return options;
+//    }
+//
+//    public void setOptions(Set<ApproverOptionModel> options) {
+//        this.options = options;
+//    }
 }
